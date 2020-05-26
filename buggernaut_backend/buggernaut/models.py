@@ -17,6 +17,7 @@ class User(AbstractUser):
 
 class Project(models.Model):
     title = models.CharField(max_length=50)
+    slug = models.CharField(max_length=50)
     wiki = models.CharField(max_length=500)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='projects')
     deployed = models.BooleanField(default=False)

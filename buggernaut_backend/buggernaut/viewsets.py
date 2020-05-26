@@ -21,7 +21,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     filter_backends = (filters.DjangoFilterBackend,)
-    filterset_fields = ['deployed']
+    filterset_fields = ['deployed', 'slug']
 
     @action(methods=['get', ], detail=True, url_path='issues', url_name='issues', permission_classes=[IsAuthenticated])
     def get_issues(self, request, pk):
@@ -162,7 +162,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 return Response({"status": "user created", "access_token": ac_tok}, status=status.HTTP_202_ACCEPTED)
             else:
                 # SORRY YOU CAN'T USE THIS
-                return Response({"status": "user not in IMG"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"status": "user not in IMG"})
 
         user.access_token = ac_tok
         user.save()
