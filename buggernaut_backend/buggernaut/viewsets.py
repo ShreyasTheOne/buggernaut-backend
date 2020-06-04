@@ -19,9 +19,15 @@ from django.contrib.auth import login, logout
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
+    # serializer_class = self.get_s
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ['deployed', 'slug']
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return ProjectPostSerializer
+        else:
+            return ProjectGetSerializer
 
     @action(methods=['get', ], detail=True, url_path='issues', url_name='issues', permission_classes=[IsAuthenticated])
     def get_issues(self, request, pk):
@@ -31,7 +37,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         except Issue.DoesNotExist:
             return Response({'Empty': 'No Issues for this project yet'}, status=status.HTTP_204_NO_CONTENT)
 
-        ser = IssueSerializer(issues_list, many=True)
+        ser = IssueGetSerializer(issues_list, many=True)
         # ser = UserSerializer(user)
         return Response(ser.data)
 
@@ -68,19 +74,22 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
 class IssueViewSet(viewsets.ModelViewSet):
     queryset = Issue.objects.all()
-    serializer_class = IssueSerializer
-
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ['reported_by', 'assigned_to']
 
-    @action(methods=['patch', ], detail=True, url_path='resolve', url_name='resolve')
-    # @permission_classes([IsReportedByOrTeamMemberOrAdmin])
+    def get_serializer_class(self):
+        if self.action == "create":
+            return IssuePostSerializer
+        else:
+            return IssueGetSerializer
+
+    @action(methods=['patch', ], detail=True, url_path='resolve', url_name='resolve', permission_classes=[IsReportedByOrTeamMemberOrAdmin])
     def resolve(self, request, pk):
         issue = Issue.objects.get(pk=pk)
         issue.resolved = True
         issue.save()
 
-        ser = IssueSerializer(issue)
+        ser = IssueGetSerializer(issue)
         return Response(ser.data)
 
     @action(methods=['patch', ], detail=True, url_path='assign', url_name='assign')
@@ -90,7 +99,7 @@ class IssueViewSet(viewsets.ModelViewSet):
         issue = Issue.objects.get(pk=pk)
 
         if User.objects.get(pk=assign_to) in issue.project.members.all():
-            ser = IssueSerializer(issue, data={'assigned_to': assign_to}, partial=True)
+            ser = IssueGetSerializer(issue, data={'assigned_to': assign_to}, partial=True)
 
             if ser.is_valid():
                 ser.save()
@@ -104,7 +113,8 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    @action(methods=['post', 'options', ], detail=False, url_name="onlogin", url_path="onlogin", permission_classes=[AllowAny])
+    @action(methods=['post', 'options', ], detail=False, url_name="onlogin", url_path="onlogin",
+            permission_classes=[AllowAny])
     def on_login(self, request):
 
         ode = self.request.data
@@ -127,7 +137,7 @@ class UserViewSet(viewsets.ModelViewSet):
             'Authorization': 'Bearer ' + ac_tok,
         }
         user_data = requests.get(url="https://internet.channeli.in/open_auth/get_user_data/", headers=headers).json()
-
+        # print(user_data.text)
         # return Response(user_data)
         # CHECK IF USER EXISTS
 
@@ -150,12 +160,18 @@ class UserViewSet(viewsets.ModelViewSet):
                 firstName = name[0]
                 fullName = user_data["person"]["fullName"]
 
+                if user_data["person"]["displayPicture"] is None:
+                    picture = "https://ui-avatars.com/api/?name=" + name[0] + "+" + name[
+                        1] + "&background=cae7b9&color=1e3231"
+                else:
+                    picture = "https://internet.channeli.in" + user_data["person"]["displayPicture"]
+
                 is_admin = False
                 if user_data["student"]["currentYear"] >= 4:
                     is_admin = True
 
                 newUser = User(enrolment_number=enrolNum, email=email, first_name=firstName, username=fullName,
-                               is_superuser=is_admin, access_token=ac_tok)
+                               is_superuser=is_admin, display_picture=picture)
                 newUser.save()
                 login(request=request, user=newUser)
                 # ser = UserSerializer(newUser)
@@ -170,7 +186,8 @@ class UserViewSet(viewsets.ModelViewSet):
         # request.session["user"] = "dingo"
         return Response({"status": "user exists", "access_token": ac_tok})
 
-    @action(methods=['post', 'options', ], detail=False, url_name="login", url_path="login", permission_classes=[AllowAny])
+    @action(methods=['post', 'options', ], detail=False, url_name="login", url_path="login",
+            permission_classes=[AllowAny])
     def pre_login(self, request):
         # print({"hello":"o"})
         data = self.request.data
@@ -189,6 +206,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(methods=['get', 'options', ], detail=False, url_name="test", url_path="test", permission_classes=[AllowAny])
     def test(self, request):
         if request.user.is_authenticated:
-            return Response({"detail": request.user.enrolment_number}, status=status.HTTP_202_ACCEPTED)
+            ser = UserSerializer(request.user)
+            return Response(ser.data, status=status.HTTP_202_ACCEPTED)
         else:
-            return Response({"detail": "Not authenticated"})
+            return Response({"enrolment_number": "Not authenticated"})

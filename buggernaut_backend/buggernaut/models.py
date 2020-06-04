@@ -9,7 +9,7 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     is_superuser = models.BooleanField(default=False)
     enrolment_number = models.CharField(max_length=15)
-    access_token = models.CharField(max_length=100)
+    display_picture = models.CharField(max_length=500)
 
     def __str__(self):
         return self.first_name + " " + self.last_name
@@ -32,7 +32,8 @@ class Project(models.Model):
 
 class Issue(models.Model):
     project = models.ForeignKey(Project, related_name='issues', on_delete=models.CASCADE)
-    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, default=None, related_name="issue_assigned_to_user", on_delete=models.CASCADE)
+    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="issue_assigned_to_user", on_delete=models.CASCADE, default=None, null=True)
+    resolved_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="issue_resolved_by_user", on_delete=models.CASCADE, default=None, null=True)
     reported_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="issue_reported_by_user", on_delete=models.CASCADE)
     subject = models.CharField(max_length=100, default="Subject")
     description = models.CharField(max_length=300, default="Description")
