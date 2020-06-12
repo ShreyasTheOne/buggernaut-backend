@@ -12,26 +12,24 @@ class IsAuth(permissions.BasePermission):
 
 class IsTeamMemberOrAdmin(permissions.BasePermission):
 
-    def has_permission(self, request, view):
-
-        project = request.project
+    def has_object_permission(self, request, view, obj):
         user = request.user
-        if user.is_superuser or user in project.members:
+        if user.is_superuser or user in obj.project.members.all():
             return True
         else:
             return False
 
 
-class IsReportedByOrTeamMemberOrAdmin(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        issue = request.issue
-        user = request.user
-        project = request.project
-        if user.is_superuser or user in project.members or user == issue.reported_by:
-            return True
-        else:
-            return False
+# class IsReportedByOrTeamMemberOrAdmin(permissions.BasePermission):
+#
+#     def has_permission(self, request, view):
+#         issue = request.issue
+#         user = request.user
+#         project = request.project
+#         if user.is_superuser or user in project.members or user == issue.reported_by:
+#             return True
+#         else:
+#             return False
 
 
 class IsAdmin(permissions.BasePermission):

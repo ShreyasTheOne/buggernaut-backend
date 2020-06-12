@@ -1,6 +1,7 @@
 import json
 
 from rest_framework import viewsets
+from rest_framework.parsers import FileUploadParser
 from buggernaut.models import *
 import requests
 from django.http import Http404
@@ -24,10 +25,21 @@ class ProjectViewSet(viewsets.ModelViewSet):
     filterset_fields = ['deployed', 'slug']
 
     def get_serializer_class(self):
-        if self.action == "create":
+        if self.action == "create" or self.action == "update" or self.action == "partial":
             return ProjectPostSerializer
         else:
             return ProjectGetSerializer
+
+    @action(methods=['get', ], detail=False, url_path='verify', url_name='verify', permission_classes=[IsAuthenticated])
+    def check_slug(self, request):
+        slug = self.request.query_params.get('slug')
+        print(slug)
+        try:
+            Project.objects.get(slug=slug)
+        except Project.DoesNotExist:
+            return Response({"status": "Available"}, status=status.HTTP_202_ACCEPTED)
+
+        return Response({"status": "Taken"}, status=status.HTTP_202_ACCEPTED)
 
     @action(methods=['get', ], detail=True, url_path='issues', url_name='issues', permission_classes=[IsAuthenticated])
     def get_issues(self, request, pk):
@@ -41,16 +53,21 @@ class ProjectViewSet(viewsets.ModelViewSet):
         # ser = UserSerializer(user)
         return Response(ser.data)
 
-    @action(methods=['get', ], detail=True, url_path='team', url_name='team')
-    def get_team_members(self, request, pk):
+    @action(methods=['patch', ], detail=True, url_path='update-team', url_name='update-team', permission_classes=[IsAuthenticated])
+    def update_team(self, request, pk):
         project = Project.objects.get(pk=pk)
-        members_list = project.members
+        members_list = self.request.data["members"]
+        print("HEO")
+        project.members.clear()
+        for member in members_list:
+            project.members.add(member)
+        print("HELLO")
+        project.save()
 
-        ser = UserSerializer(members_list, many=True)
+        ser = ProjectGetSerializer(project)
         return Response(ser.data)
 
     @action(methods=['patch', ], detail=True, url_path='deploy', url_name='deploy')
-    # @permission_classes([IsTeamMemberOrAdmin])
     def deploy_project(self, request, pk):
         project = Project.objects.get(pk=pk)
 
@@ -83,14 +100,20 @@ class IssueViewSet(viewsets.ModelViewSet):
         else:
             return IssueGetSerializer
 
-    @action(methods=['patch', ], detail=True, url_path='resolve', url_name='resolve', permission_classes=[IsReportedByOrTeamMemberOrAdmin])
-    def resolve(self, request, pk):
+    @action(methods=['get', ], detail=True, url_path='resolve-or-reopen', url_name='resolve-or-reopen', permission_classes=[IsTeamMemberOrAdmin])
+    def resolve_or_reopen(self, request, pk):
+        user = self.request.user;
         issue = Issue.objects.get(pk=pk)
-        issue.resolved = True
+        if issue.resolved:
+            issue.resolved = False
+        else:
+            issue.resolved = True
+
+        issue.resolved_by = user;
         issue.save()
 
         ser = IssueGetSerializer(issue)
-        return Response(ser.data)
+        return Response(ser.data, status=status.HTTP_200_OK)
 
     @action(methods=['patch', ], detail=True, url_path='assign', url_name='assign')
     # @permission_classes([IsTeamMemberOrAdmin])
@@ -170,7 +193,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 if user_data["student"]["currentYear"] >= 4:
                     is_admin = True
 
-                newUser = User(enrolment_number=enrolNum, email=email, first_name=firstName, username=fullName,
+                newUser = User(enrolment_number=enrolNum, username=enrolNum, email=email, first_name=firstName, full_name=fullName,
                                is_superuser=is_admin, display_picture=picture)
                 newUser.save()
                 login(request=request, user=newUser)
@@ -210,3 +233,21 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(ser.data, status=status.HTTP_202_ACCEPTED)
         else:
             return Response({"enrolment_number": "Not authenticated"})
+
+
+class ImageViewSet(viewsets.ModelViewSet):
+    queryset = Image.objects.all()
+    serializer_class = ImageSerializer
+    # parser_classes = [FileUploadParser, ]
+    #
+    # @action(methods=['post', 'options', ], detail=False, url_name="upload", url_path="upload", permission_classes=[AllowAny])
+    # def upload_image(self, request):
+    #     # print(request.data)
+    #     print("Hi  l")
+    #     serializer = ImageSerializer(data=request.data)
+    #
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     else:
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -64,6 +64,9 @@ CORS_ORIGIN_WHITELIST = (
 )
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+CSRF_COOKIE_NAME = 'buggernaut_csrftoken'
+SESSION_COOKIE_NAME = 'buggernaut_sessionid'
+
 
 ROOT_URLCONF = 'buggernaut_backend.urls'
 
@@ -147,3 +150,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
