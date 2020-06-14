@@ -57,11 +57,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def update_team(self, request, pk):
         project = Project.objects.get(pk=pk)
         members_list = self.request.data["members"]
-        print("HEO")
+        # print("HEO")
         project.members.clear()
         for member in members_list:
             project.members.add(member)
-        print("HELLO")
+        # print("HELLO")
         project.save()
 
         ser = ProjectGetSerializer(project)
@@ -238,8 +238,8 @@ class UserViewSet(viewsets.ModelViewSet):
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
+
     # parser_classes = [FileUploadParser, ]
-    #
     # @action(methods=['post', 'options', ], detail=False, url_name="upload", url_path="upload", permission_classes=[AllowAny])
     # def upload_image(self, request):
     #     # print(request.data)

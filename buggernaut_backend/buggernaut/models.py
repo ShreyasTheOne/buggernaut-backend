@@ -20,7 +20,7 @@ class User(AbstractUser):
 class Project(models.Model):
     title = models.CharField(max_length=50)
     slug = models.CharField(max_length=50)
-    image = models.ImageField(upload_to='projectImages', default='projectImages/img.png')
+    image = models.ImageField(upload_to='projectImages/', default='projectImages/img.png')
     wiki = models.TextField()
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='projects')
     deployed = models.BooleanField(default=False)
@@ -58,7 +58,7 @@ class Issue(models.Model):
 #     content = models.CharField(max_length=1000)
 
 class Image(models.Model):
-    url = models.FileField(blank=False, null=False)
+    url = models.ImageField(upload_to='rtfImages/', blank=False, null=False)
 
     def __str__(self):
         return self.url.name
