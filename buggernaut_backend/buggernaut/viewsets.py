@@ -115,22 +115,34 @@ class IssueViewSet(viewsets.ModelViewSet):
         ser = IssueGetSerializer(issue)
         return Response(ser.data, status=status.HTTP_200_OK)
 
-    @action(methods=['patch', ], detail=True, url_path='assign', url_name='assign')
-    # @permission_classes([IsTeamMemberOrAdmin])
+    @action(methods=['get', ], detail=True, url_path='assign', url_name='assign', permission_classes=[IsTeamMemberOrAdmin])
     def assign_issue(self, request, pk):
         assign_to = self.request.query_params.get('assign_to')
         issue = Issue.objects.get(pk=pk)
 
-        if User.objects.get(pk=assign_to) in issue.project.members.all():
-            ser = IssueGetSerializer(issue, data={'assigned_to': assign_to}, partial=True)
+        try:
+            user = User.objects.get(pk=assign_to)
+        except User.DoesNotExist:
+            return Response({'Detail': 'User does not exist'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-            if ser.is_valid():
-                ser.save()
-                return Response({'status': 'Assignment Successful'}, status=status.HTTP_202_ACCEPTED)
-
+        if user in issue.project.members.all():
+            issue.assigned_to = user
+            issue.save()
+            return Response({'Detail': 'Assignment Successful'}, status=status.HTTP_202_ACCEPTED)
         else:
-            return Response({'Error': 'User not a team member'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response({'Detail': 'User not a team member'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    @action(methods=['get', ], detail=True, url_path='comments', url_name='comments', permission_classes=[IsAuthenticated])
+    def get_comments(self, request, pk):
+
+        try:
+            comments_list = Comment.objects.filter(issue=pk)
+        except Comment.DoesNotExist:
+            return Response({'Empty': 'No comments for this issue'}, status=status.HTTP_204_NO_CONTENT)
+
+        ser = CommentGetSerializer(comments_list, many=True)
+        # ser = UserSerializer(user)
+        return Response(ser.data)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -251,3 +263,13 @@ class ImageViewSet(viewsets.ModelViewSet):
     #         return Response(serializer.data, status=status.HTTP_201_CREATED)
     #     else:
     #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CommentPostSerializer
+        else:
+            return CommentGetSerializer

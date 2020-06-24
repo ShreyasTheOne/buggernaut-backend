@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'rest_framework',
     'buggernaut',
     'django_filters',
@@ -66,6 +67,10 @@ CORS_ORIGIN_WHITELIST = (
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 CSRF_COOKIE_NAME = 'buggernaut_csrftoken'
 SESSION_COOKIE_NAME = 'buggernaut_sessionid'
+
+
+
+
 
 
 ROOT_URLCONF = 'buggernaut_backend.urls'
@@ -152,3 +157,13 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 MEDIA_URL = '/media/'
+
+ASGI_APPLICATION = "buggernaut_backend.routing.application"
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}

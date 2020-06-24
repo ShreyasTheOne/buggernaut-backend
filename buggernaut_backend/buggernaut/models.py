@@ -2,7 +2,6 @@ from django.db import models
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-# from ckeditor.fields import RichTextField
 
 # Create your models here.
 
@@ -48,14 +47,19 @@ class Issue(models.Model):
         return self.subject
 
     class Meta:
-        ordering = ['created_at', 'priority']
+        ordering = ['-created_at', 'priority']
 
 
-# class Comment(models.Model):
-#     parent = models.ForeignKey(Comment, related_name="reply", on_delete=models.CASCADE)
-#     issue = models.ForeignKey(Issue, related_name="comment", on_delete=models.CASCADE)
-#     commented_by = models.ForeignKey(User, related_name="commented_by_user", on_delete=models.CASCADE)
-#     content = models.CharField(max_length=1000)
+class Comment(models.Model):
+    parent = models.ForeignKey('self', default=None, null=True, related_name="comment_parent", on_delete=models.CASCADE)
+    issue = models.ForeignKey(Issue, related_name="comment", on_delete=models.CASCADE)
+    commented_by = models.ForeignKey(User, related_name="commented_by_user", on_delete=models.CASCADE)
+    content = models.CharField(max_length=1000)
+    created_at = models.DateTimeField('time published', auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at', ]
+
 
 class Image(models.Model):
     url = models.ImageField(upload_to='rtfImages/', blank=False, null=False)

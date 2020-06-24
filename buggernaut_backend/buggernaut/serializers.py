@@ -20,7 +20,8 @@ class ProjectGetSerializer(serializers.ModelSerializer):
 class IssuePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Issue
-        fields = ['id', 'project', 'assigned_to', 'reported_by', 'resolved_by', 'subject', 'description', 'priority', 'resolved',
+        fields = ['id', 'project', 'assigned_to', 'reported_by', 'resolved_by', 'subject', 'description', 'priority',
+                  'resolved',
                   'created_at']
         read_only_fields = ['id', 'created_at']
 
@@ -28,16 +29,31 @@ class IssuePostSerializer(serializers.ModelSerializer):
 class IssueGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Issue
-        fields = ['id', 'project', 'assigned_to', 'reported_by', 'resolved_by', 'subject', 'description', 'priority', 'resolved',
+        fields = ['id', 'project', 'assigned_to', 'reported_by', 'resolved_by', 'subject', 'description', 'priority',
+                  'resolved',
                   'created_at']
         read_only_fields = ['id', 'created_at']
+        depth = 1
+
+
+class CommentPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'parent', 'issue', 'commented_by', 'content']
+
+
+class CommentGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'parent', 'issue', 'commented_by', 'content', 'created_at']
         depth = 1
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['full_name', 'first_name', 'username', 'pk', 'enrolment_number', 'email', 'display_picture', 'is_superuser']
+        fields = ['full_name', 'first_name', 'username', 'pk', 'enrolment_number', 'email', 'display_picture',
+                  'is_superuser']
         # read_only_fields = ['username', 'first_name', 'last_name', 'pk']
 
 
