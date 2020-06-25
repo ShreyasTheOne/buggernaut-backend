@@ -197,7 +197,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
                 if user_data["person"]["displayPicture"] is None:
                     picture = "https://ui-avatars.com/api/?name=" + name[0] + "+" + name[
-                        1] + "&background=cae7b9&color=1e3231"
+                        1] + "&background=cae7b9&color=1e3231&size=512"
                 else:
                     picture = "https://internet.channeli.in" + user_data["person"]["displayPicture"]
 
@@ -237,6 +237,11 @@ class UserViewSet(viewsets.ModelViewSet):
         login(request=request, user=user)
         # request.session["user"] = user
         return Response({"status": "user found"}, status=status.HTTP_202_ACCEPTED)
+
+    @action(methods=['get', 'options', ], detail=False, url_name="logout_user", url_path="logout_user", permission_classes=[IsAuthenticated])
+    def logout_user(self, request):
+        logout(request)
+        return Response({"status":"logged_out"})
 
     @action(methods=['get', 'options', ], detail=False, url_name="test", url_path="test", permission_classes=[AllowAny])
     def test(self, request):
