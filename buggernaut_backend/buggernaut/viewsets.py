@@ -251,23 +251,34 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return Response({"enrolment_number": "Not authenticated"})
 
+    @action(methods=['get', 'options', ], detail=True, url_name="toggleStatus", url_path="toggleStatus", permission_classes=[IsAuthenticated])
+    def toggleStatus(self, request, pk):
+        if request.user.is_superuser:
+            user = User.objects.get(pk=pk)
+            if user.is_superuser:
+                user.is_superuser = False
+            else:
+                user.is_superuser= True
+
+            user.save()
+            return Response({"status": "Role updated"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"status": "You're not an admin"}, status=status.HTTP_403_FORBIDDEN)
+
+    @action(methods=['get', 'options', ], detail=False, url_name="stats", url_path="stats", permission_classes=[IsAuthenticated])
+    def get_stats(self, request):
+        if request.user.is_authenticated:
+            reported = Issue.objects.filter(reported_by=request.user).count()
+            resolved = Issue.objects.filter(resolved_by=request.user).count()
+            stats = {"resolved": resolved, "reported":reported}
+            ser = UserSerializer(request.user)
+            return Response({**ser.data, **stats}, status=status.HTTP_202_ACCEPTED)
+        else:
+            return Response({"enrolment_number": "Not authenticated"})
 
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
-
-    # parser_classes = [FileUploadParser, ]
-    # @action(methods=['post', 'options', ], detail=False, url_name="upload", url_path="upload", permission_classes=[AllowAny])
-    # def upload_image(self, request):
-    #     # print(request.data)
-    #     print("Hi  l")
-    #     serializer = ImageSerializer(data=request.data)
-    #
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     else:
-    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
