@@ -1,7 +1,7 @@
 import json
 
 from rest_framework import viewsets
-from rest_framework.parsers import FileUploadParser
+from .mailingSystem import Mailer
 from buggernaut.models import *
 import requests
 from django.http import Http404
@@ -14,7 +14,6 @@ from .permissions import *
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import login, logout
 
-
 # Create your views here.
 
 
@@ -23,6 +22,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
     # serializer_class = self.get_s
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ['deployed', 'slug']
+
+    def perform_create(self, serializer):
+        project = serializer.save()
+
+        mailerInstance = Mailer()
+        link = "http://localhost:3000/projects/"+project.slug
+        mailerInstance.newProjectUpdate(project_name=project.title, project_link=link, team_members=project.members.all())
 
     def get_serializer_class(self):
         if self.action == "create" or self.action == "update" or self.action == "partial":
@@ -33,7 +39,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(methods=['get', ], detail=False, url_path='verify', url_name='verify', permission_classes=[IsAuthenticated])
     def check_slug(self, request):
         slug = self.request.query_params.get('slug')
-        print(slug)
+        # print(slug)
         try:
             Project.objects.get(slug=slug)
         except Project.DoesNotExist:
@@ -94,11 +100,34 @@ class IssueViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ['reported_by', 'assigned_to']
 
+    def perform_create(self, serializer):
+        issue = serializer.save()
+        # print(issue.reported_by)
+        project = issue.project
+        link = "http://localhost:3000/projects/" + project.slug
+        mailer = Mailer()
+        # def newBugReported(self, project_name, project_link, reported_by, title, team_members=[]):
+        mailer.newBugReported( project_name=project.title, project_link=link, reported_by=issue.reported_by.full_name, issue_subject=issue.subject, team_members=project.members.all())
+
     def get_serializer_class(self):
         if self.action == "create":
             return IssuePostSerializer
         else:
             return IssueGetSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            issue = self.get_object()
+            project = issue.project
+            link = "http://localhost:3000/projects/" + project.slug
+            mailer = Mailer()
+            mailer.bugStatusChanged(project_name=project.title, project_link=link, issue_subject=issue.subject, action="deleted", doer=request.user.full_name, team_members=project.members.all())
+            self.perform_destroy(issue)
+
+        except Http404:
+            pass
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(methods=['get', ], detail=True, url_path='resolve-or-reopen', url_name='resolve-or-reopen', permission_classes=[IsTeamMemberOrAdmin])
     def resolve_or_reopen(self, request, pk):
@@ -112,8 +141,18 @@ class IssueViewSet(viewsets.ModelViewSet):
         issue.resolved_by = user;
         issue.save()
 
+        project = issue.project
+        link = "http://localhost:3000/projects/" + project.slug
+        mailer = Mailer()
+
+        if issue.resolved:
+            mailer.bugStatusChanged(project_name=project.title, project_link=link, issue_subject=issue.subject, action="resolved", doer=request.user.full_name, team_members=project.members.all())
+        else:
+            mailer.bugStatusChanged(project_name=project.title, project_link=link, issue_subject=issue.subject, action="reopened", doer=request.user.full_name, team_members=project.members.all())
+
         ser = IssueGetSerializer(issue)
         return Response(ser.data, status=status.HTTP_200_OK)
+
 
     @action(methods=['get', ], detail=True, url_path='assign', url_name='assign', permission_classes=[IsTeamMemberOrAdmin])
     def assign_issue(self, request, pk):
@@ -128,6 +167,15 @@ class IssueViewSet(viewsets.ModelViewSet):
         if user in issue.project.members.all():
             issue.assigned_to = user
             issue.save()
+
+            assignment_link = "http://localhost:3000/mypage?show=my-assignments"
+            project = issue.project
+            assigned = issue.assigned_to
+
+            # def bugAssigned(self, project_name, assignment_link, issue_subject, assigned_to_name, assigned_to_email):
+            mailer = Mailer()
+            mailer.bugAssigned(project_name=project.title, assignment_link=assignment_link, issue_subject=issue.subject, assigned_to_name=assigned.full_name, assigned_to_email=assigned.email)
+
             return Response({'Detail': 'Assignment Successful'}, status=status.HTTP_202_ACCEPTED)
         else:
             return Response({'Detail': 'User not a team member'}, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -147,6 +195,7 @@ class IssueViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    # permission_classes = [IsAdmin, ]
 
     @action(methods=['post', 'options', ], detail=False, url_name="onlogin", url_path="onlogin",
             permission_classes=[AllowAny])
@@ -202,7 +251,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     picture = "https://internet.channeli.in" + user_data["person"]["displayPicture"]
 
                 is_admin = False
-                if user_data["student"]["currentYear"] >= 4:
+                if user_data["student"]["currentYear"] >= 3:
                     is_admin = True
 
                 newUser = User(enrolment_number=enrolNum, username=enrolNum, email=email, first_name=firstName, full_name=fullName,
@@ -215,8 +264,9 @@ class UserViewSet(viewsets.ModelViewSet):
                 # SORRY YOU CAN'T USE THIS
                 return Response({"status": "user not in IMG"})
 
-        user.access_token = ac_tok
-        user.save()
+        if user.banned:
+            return Response({"status": "user banned", "access_token": ac_tok})
+
         login(request=request, user=user)
         # request.session["user"] = "dingo"
         return Response({"status": "user exists", "access_token": ac_tok})
@@ -246,8 +296,25 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(methods=['get', 'options', ], detail=False, url_name="test", url_path="test", permission_classes=[AllowAny])
     def test(self, request):
         if request.user.is_authenticated:
+            if request.user.banned:
+                logout(request)
+                return Response({"enrolment_number":"user banned"})
             ser = UserSerializer(request.user)
             return Response(ser.data, status=status.HTTP_202_ACCEPTED)
+        else:
+            return Response({"enrolment_number": "Not authenticated"})
+
+    @action(methods=['get', 'options', ], detail=False, url_name="stats", url_path="stats", permission_classes=[IsAuthenticated])
+    def get_stats(self, request):
+        if request.user.is_authenticated:
+            if request.user.banned:
+                logout(request)
+                return Response({"enrolment_number":"user banned"})
+            reported = Issue.objects.filter(reported_by=request.user).count()
+            resolved = Issue.objects.filter(resolved_by=request.user).count()
+            stats = {"resolved": resolved, "reported":reported}
+            ser = UserSerializer(request.user)
+            return Response({**ser.data, **stats}, status=status.HTTP_202_ACCEPTED)
         else:
             return Response({"enrolment_number": "Not authenticated"})
 
@@ -261,20 +328,46 @@ class UserViewSet(viewsets.ModelViewSet):
                 user.is_superuser= True
 
             user.save()
+
+            mailer = Mailer()
+
+            if user.is_superuser:
+                mailer.statusUpdate(user_email=user.email, user_name=user.full_name, change="promote", changer=request.user.full_name)
+            else:
+                mailer.statusUpdate(user_email=user.email, user_name=user.full_name, change="demote", changer=request.user.full_name)
+
             return Response({"status": "Role updated"}, status=status.HTTP_200_OK)
         else:
             return Response({"status": "You're not an admin"}, status=status.HTTP_403_FORBIDDEN)
 
-    @action(methods=['get', 'options', ], detail=False, url_name="stats", url_path="stats", permission_classes=[IsAuthenticated])
-    def get_stats(self, request):
-        if request.user.is_authenticated:
-            reported = Issue.objects.filter(reported_by=request.user).count()
-            resolved = Issue.objects.filter(resolved_by=request.user).count()
-            stats = {"resolved": resolved, "reported":reported}
-            ser = UserSerializer(request.user)
-            return Response({**ser.data, **stats}, status=status.HTTP_202_ACCEPTED)
+    @action(methods=['get', 'options', ], detail=True, url_name="toggleBan", url_path="toggleBan", permission_classes=[IsAuthenticated])
+    def toggleBan(self, request, pk):
+        if request.user.is_superuser:
+            user = User.objects.get(pk=pk)
+            if user.banned:
+                user.banned = False
+            else:
+                user.banned = True
+
+            user.save()
+
+            mailer = Mailer()
+
+            if user.is_superuser:
+                mailer.banOrAdmitUser(user_email=user.email, user_name=user.full_name, change="banned",
+                                    changer=request.user.full_name)
+            else:
+                mailer.banOrAdmitUser(user_email=user.email, user_name=user.full_name, change="admit",
+                                    changer=request.user.full_name)
+
+            return Response({"status": "Status updated"}, status=status.HTTP_200_OK)
         else:
-            return Response({"enrolment_number": "Not authenticated"})
+            return Response({"status": "You're not an admin"}, status=status.HTTP_403_FORBIDDEN)
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
 
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = Image.objects.all()
