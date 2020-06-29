@@ -358,3 +358,36 @@ class Mailer:
 
         send_mail(subject=subject, message=text, from_email="The Buggernaut Bot",
                   recipient_list=[user_email, ], html_message=html)
+
+    def deployProject(self, project, deployed_by, team_members=[]):
+
+        for mem in team_members:
+
+            text = f"""
+                                Woohoo!
+
+                                Your app {project} has been deployed by {deployed_by}.
+                                You now step into the world of fixing production bugs. Yayyyy!        
+
+                                Enjoy :)
+                                The Buggernaut Bot
+
+                                   """
+            html = f"""
+                               <html>
+                                    <head></head>
+                                    <body>
+                                            <h3>Woohoo!</h3>
+
+                                            Your app {project} has been deployed by {deployed_by}. <br>
+                                            You now step into the world of fixing production bugs. Yayyyy!<br>
+
+                                            <br>
+                                            Enjoy :) <br>
+                                            The Buggernaut Bot
+                                    </body>
+                                </html>
+                               """
+
+            send_mail(subject="CONGRATULATIONS!", message=text, from_email="The Buggernaut Bot",
+                      recipient_list=[mem.email, ], html_message=html)

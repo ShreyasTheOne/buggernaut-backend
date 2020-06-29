@@ -73,17 +73,25 @@ class ProjectViewSet(viewsets.ModelViewSet):
         ser = ProjectGetSerializer(project)
         return Response(ser.data)
 
-    @action(methods=['patch', ], detail=True, url_path='deploy', url_name='deploy')
+    @action(methods=['get', ], detail=True, url_path='deploy', url_name='deploy', permission_classes=[IsAuthenticated])
     def deploy_project(self, request, pk):
         project = Project.objects.get(pk=pk)
+
+        if request.user.is_superuser or request.user in project.members:
+            pass
+        else:
+            return Response({"Status":"Not authorized."} , status=status.HTTP_403_FORBIDDEN)
 
         if not Issue.objects.filter(project=project, resolved=False):
             project.deployed = True
             project.save()
-            return Response({'Success': 'Project successfully deployed'}, status=status.HTTP_202_ACCEPTED)
+
+            mailer = Mailer()
+            mailer.deployProject(project=project.title, deployed_by=request.user.full_name, team_members=project.members.all())
+
+            return Response({'Status': 'Project successfully deployed'}, status=status.HTTP_202_ACCEPTED)
         else:
-            return Response({'Error': 'All issues are not resolved for this project'},
-                            status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response({'Status': 'All issues are not resolved for this project'})
 
     # @permission_classes([IsAdmin])
     def destroy(self, request, *args, **kwargs):
