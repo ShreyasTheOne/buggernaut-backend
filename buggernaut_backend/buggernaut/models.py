@@ -51,7 +51,7 @@ class Tag(models.Model):
 
 class Issue(models.Model):
     project = models.ForeignKey(Project, related_name='issues', on_delete=models.CASCADE)
-    tags = models.ManyToManyField(Tag, related_name='tags')
+    tags = models.ManyToManyField(Tag, related_name='tags', blank=True)
     assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="issue_assigned_to_user", on_delete=models.CASCADE, default=None, null=True)
     resolved_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="issue_resolved_by_user", on_delete=models.CASCADE, default=None, null=True)
     reported_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="issue_reported_by_user", on_delete=models.CASCADE)

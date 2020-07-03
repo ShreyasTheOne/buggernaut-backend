@@ -15,7 +15,7 @@ class Mailer:
 
                            You have been added to the team of the project {project_name}!
 
-                           Bon Testing!<br>
+                           Bon Testing!
                            The Buggernaut Bot
 
                    """
@@ -39,13 +39,13 @@ class Mailer:
                                 </center>
                                 <br><br>
                                 Bon Testing!<br>
-                                The Buggernaut Bot
+                                The Buggernaut Bot<br>
                         </body>
                     </html>
                """
 
             # def sendMail(self, subject, from_user_name, to_user_name, receiver_email, text, html):
-            send_mail(subject="New Project Uploaded", message=text, from_email="The Buggernaut Bot", recipient_list= [email,], html_message=html)
+            send_mail(subject=f"New Project Uploaded: {project_name}", message=text, from_email="The Buggernaut Bot", recipient_list= [email,], html_message=html)
 
 
     def newBugReported(self, project_name, project_link, reported_by, issue_subject, team_members=[]):
@@ -57,11 +57,10 @@ class Mailer:
                             Hi, {name}!
 
                             {reported_by} has reported an issue for the project {project_name}:
-
-                            Issue:    
+ 
                             {issue_subject}
 
-                            Bon Testing!<br>
+                            Bon Testing!
                             The Buggernaut Bot
 
                    """
@@ -74,7 +73,7 @@ class Mailer:
 
                                 <div>{reported_by} has reported an issue for the project <b>{project_name}</b>:<div>
                                 <br>
-                                <b>Issue:</b><br>
+                                
                                 <b>{issue_subject}</b>
                                 <br>
                                 <center>
@@ -88,7 +87,7 @@ class Mailer:
                                 </center>
                                 <br>
                                 Bon Testing!<br>
-                                The Buggernaut Bot
+                                The Buggernaut Bot<br>
                         </body>
                     </html>
                """
@@ -106,7 +105,7 @@ class Mailer:
                         Issue:
                         {issue_subject}
 
-                        Bon Testing!<br>
+                        Bon Testing!
                         The Buggernaut Bot
 
                """
@@ -135,7 +134,7 @@ class Mailer:
                             </center>
                             <br><br>
                             Bon Testing!<br>
-                            The Buggernaut Bot
+                            The Buggernaut Bot<br>
                     </body>
                 </html>
            """
@@ -157,7 +156,7 @@ class Mailer:
                             Issue:    
                             {issue_subject}
 
-                            Bon Testing!<br>
+                            Bon Testing!
                             The Buggernaut Bot
 
                    """
@@ -184,7 +183,7 @@ class Mailer:
                                 </center>
                                 <br>
                                 Bon Testing!<br>
-                                The Buggernaut Bot
+                                The Buggernaut Bot<br>
                         </body>
                     </html>
                """
@@ -206,7 +205,7 @@ class Mailer:
 
                         {issue_subject}
 
-                        Bon Testing!<br>
+                        Bon Testing!
                         The Buggernaut Bot
 
                        """
@@ -233,7 +232,7 @@ class Mailer:
                                     </center>
                                     <br>
                                     Bon Testing!<br>
-                                    The Buggernaut Bot
+                                    The Buggernaut Bot<br>
                             </body>
                         </html>
                    """
@@ -257,7 +256,7 @@ class Mailer:
 
                         You have been promoted to the role of <b>ADMIN</b> by {changer}!
 
-                        Bon Testing!<br>
+                        Bon Testing!
                         The Buggernaut Bot
 
                            """
@@ -271,7 +270,7 @@ class Mailer:
 
                                     <br>
                                     Bon Testing!<br>
-                                    The Buggernaut Bot
+                                    The Buggernaut Bot<br>
                             </body>
                         </html>
                        """
@@ -281,7 +280,7 @@ class Mailer:
 
                         You have been demoted to the role of <b>USER</b> by {changer}.
 
-                        Bon Testing!<br>
+                        Bon Testing!
                         The Buggernaut Bot
 
                            """
@@ -296,7 +295,7 @@ class Mailer:
 
                                     <br>
                                     Bon Testing!<br>
-                                    The Buggernaut Bot
+                                    The Buggernaut Bot<br>
                             </body>
                         </html>
                        """
@@ -323,7 +322,7 @@ class Mailer:
                                     <div>You have been banned from Buggernaut by {changer}.<div>
 
                                     <br>
-                                    The Buggernaut Bot
+                                    The Buggernaut Bot<br>
                             </body>
                         </html>
                        """
@@ -346,7 +345,7 @@ class Mailer:
                                     <div>You have been readmitted Buggernaut by {changer}.<div>
 
                                     <br>
-                                    The Buggernaut Bot
+                                    The Buggernaut Bot<br>
                             </body>
                         </html>
                        """
@@ -384,7 +383,7 @@ class Mailer:
 
                                             <br>
                                             Enjoy :) <br>
-                                            The Buggernaut Bot
+                                            The Buggernaut Bot<br><br>
                                     </body>
                                 </html>
                                """
