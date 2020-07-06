@@ -12,7 +12,7 @@ from django_filters import rest_framework as filters
 from .permissions import *
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import login, logout
-
+from buggernaut_backend.settings import base_configuration, BASE_DIR
 # Create your views here.
 
 
@@ -105,7 +105,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
             for i in images:
                 i.delete()
-                url_tbd = "/home/shreyasdoda/buggernaut/backend/buggernaut_backend" + i.url.url
+                url_tbd = BASE_DIR + i.url.url
                 os.remove(url_tbd)
 
             self.perform_destroy(instance)
@@ -144,7 +144,7 @@ class IssueViewSet(viewsets.ModelViewSet):
 
             for i in images:
                 i.delete()
-                url_tbd = "/home/shreyasdoda/buggernaut/backend/buggernaut_backend" + i.url.url
+                url_tbd = BASE_DIR + i.url.url
                 os.remove(url_tbd)
 
             mailer = Mailer()
@@ -234,8 +234,8 @@ class UserViewSet(viewsets.ModelViewSet):
         # GET AUTHORIZATION CODE
         url = "https://internet.channeli.in/open_auth/token/"
         data = {
-            'client_id': 'uj0edatgcr0kBx1OZECybxsXQZvDh63s2NSwE38t',
-            'client_secret': 'roWePxnlQuNYEXWOsijvzp3f39FyIDSpl0ye3QNtMsmMxUTg4US5Y8Ex8QvdDQPaklWmJwpv6n3CjubFYF3G8hnER3qMxxHduZgcaNpa3jHnVIPQqqC5PvEJGBmxDNI2',
+            'client_id': base_configuration["secrets"]["clientID"],
+            'client_secret': base_configuration["secrets"]["clientSecret"],
             'grant_type': 'authorization_code',
             'redirect_url': 'http://localhost:3000/onlogin',
             'code': code
@@ -273,7 +273,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
                 if user_data["person"]["displayPicture"] is None:
                     picture = "https://ui-avatars.com/api/?name=" + name[0] + "+" + name[
-                        1] + "&background=cae7b9&color=1e3231&size=512"
+                        1] + "&background=DCD6F7&color=412234&size=512"
                 else:
                     picture = "https://internet.channeli.in" + user_data["person"]["displayPicture"]
 
@@ -415,7 +415,7 @@ class ImageViewSet(viewsets.ModelViewSet):
                 print("url: ",i.url)
                 if i.url.url not in urls:
                     print("deleting")
-                    url_tbd = "/home/shreyasdoda/buggernaut/backend/buggernaut_backend" + i.url.url
+                    url_tbd = BASE_DIR + i.url.url
                     print(url_tbd)
                     if os.path.exists(url_tbd):
                         i.delete()

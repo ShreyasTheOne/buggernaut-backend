@@ -6,6 +6,9 @@ __pycache__
 db.sqlite3
 media
 
+#Configuration
+/buggernaut_backend/configuration/base.yml
+
 # Backup files # 
 *.bak 
 

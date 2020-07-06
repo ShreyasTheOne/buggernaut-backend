@@ -11,16 +11,21 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-
+import yaml
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+base_config_file = open(os.path.join(
+    BASE_DIR,
+    'configuration/base.yml'
+))
+base_configuration = yaml.load(base_config_file, Loader=yaml.FullLoader)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ')@f_7ec6)t3z#u9%+853@ths1oy(fexpytpcr80swqmsgegujl'
+SECRET_KEY = base_configuration["secrets"]["secretKey"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -68,11 +73,6 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 CSRF_COOKIE_NAME = 'buggernaut_csrftoken'
 SESSION_COOKIE_NAME = 'buggernaut_sessionid'
 
-
-
-
-
-
 ROOT_URLCONF = 'buggernaut_backend.urls'
 
 TEMPLATES = [
@@ -109,11 +109,11 @@ REST_FRAMEWORK = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'buggernaut',
-        'USER': 'shreyas',
-        'PASSWORD': '$t0reMyData',
-        'HOST': '',
-        'POR': '',
+        'NAME': base_configuration["services"]["database"]["name"],
+        'USER': base_configuration["services"]["database"]["user"],
+        'PASSWORD': base_configuration["services"]["database"]["password"],
+        'HOST': base_configuration["services"]["database"]["host"],
+        'POR': base_configuration["services"]["database"]["port"],
     }
 }
 
@@ -138,18 +138,18 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'buggernaut.User'
 
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
+EMAIL_HOST = base_configuration["services"]["mailing"]["email_host"],
+EMAIL_PORT = base_configuration["services"]["mailing"]["email_port"],
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'buggernaut.testing@gmail.com'
-EMAIL_HOST_PASSWORD = '$t0reMyData'
+EMAIL_HOST_USER = base_configuration["services"]["mailing"]["email_host_user"],
+EMAIL_HOST_PASSWORD = base_configuration["services"]["mailing"]["email_host_password"],
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = base_configuration['i18n']['languageCode']
 
-TIME_ZONE = 'Asia/Kolkata'
+TIME_ZONE = base_configuration['i18n']['timezone']
 
 USE_I18N = True
 
