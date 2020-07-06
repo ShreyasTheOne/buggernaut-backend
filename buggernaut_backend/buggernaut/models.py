@@ -23,7 +23,7 @@ class User(AbstractUser):
 class Project(models.Model):
     title = models.CharField(max_length=50)
     slug = models.CharField(max_length=50)
-    image = models.ImageField(upload_to='projectImages/', default='projectImages/img.png')
+    image = models.ImageField(upload_to='projectImages/', default='assets/img.png')
     editorID = models.CharField(max_length=1000)
     wiki = models.TextField()
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='projects')
