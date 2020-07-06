@@ -5,14 +5,14 @@ from .models import *
 class ProjectPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ['id', 'title', 'slug', 'wiki', 'image', 'members', 'deployed', 'created_at']
+        fields = ['id', 'title', 'slug', 'wiki', 'image', 'members', 'deployed', 'created_at', 'editorID']
         read_only_fields = ['id', 'deployed' 'created_at']
 
 
 class ProjectGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ['id', 'title', 'slug', 'wiki', 'image', 'members', 'deployed', 'created_at']
+        fields = ['id', 'title', 'slug', 'wiki', 'image', 'members', 'deployed', 'created_at', 'editorID']
         read_only_fields = ['id', 'deployed' 'created_at']
         depth = 1
 
@@ -21,7 +21,7 @@ class IssuePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Issue
         fields = ['id', 'project', 'assigned_to', 'reported_by', 'resolved_by', 'subject', 'description', 'priority',
-                  'resolved', 'created_at', 'tags']
+                  'resolved', 'created_at', 'tags', 'editorID']
         read_only_fields = ['id', 'created_at']
 
 
@@ -29,7 +29,7 @@ class IssueGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Issue
         fields = ['id', 'project', 'assigned_to', 'reported_by', 'resolved_by', 'subject', 'description', 'priority',
-                  'resolved', 'created_at', 'tags']
+                  'resolved', 'created_at', 'tags', 'editorID']
         read_only_fields = ['id', 'created_at']
         depth = 1
 
@@ -64,4 +64,4 @@ class UserSerializer(serializers.ModelSerializer):
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
-        fields = ['url']
+        fields = ['id', 'url', 'editorID']

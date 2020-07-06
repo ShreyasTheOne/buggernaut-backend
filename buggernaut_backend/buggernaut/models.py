@@ -24,6 +24,7 @@ class Project(models.Model):
     title = models.CharField(max_length=50)
     slug = models.CharField(max_length=50)
     image = models.ImageField(upload_to='projectImages/', default='projectImages/img.png')
+    editorID = models.CharField(max_length=1000)
     wiki = models.TextField()
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='projects')
     deployed = models.BooleanField(default=False)
@@ -55,6 +56,7 @@ class Issue(models.Model):
     assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="issue_assigned_to_user", on_delete=models.CASCADE, default=None, null=True)
     resolved_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="issue_resolved_by_user", on_delete=models.CASCADE, default=None, null=True)
     reported_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="issue_reported_by_user", on_delete=models.CASCADE)
+    editorID = models.CharField(max_length=1000)
     subject = models.CharField(max_length=100, default="Subject")
     description = models.TextField(default="Description")
     priority = models.PositiveSmallIntegerField(choices=[(1, 'High'), (2, 'Medium'), (3, 'Low')], default=2)
@@ -82,7 +84,8 @@ class Comment(models.Model):
 
 
 class Image(models.Model):
+    editorID = models.CharField(max_length=1000)
     url = models.ImageField(upload_to='rtfImages/', blank=False, null=False)
 
     def __str__(self):
-        return self.url.name
+        return self.url.url

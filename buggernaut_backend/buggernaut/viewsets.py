@@ -1,5 +1,4 @@
-import json
-
+import os
 from rest_framework import viewsets
 from .mailingSystem import Mailer
 from buggernaut.models import *
@@ -7,7 +6,7 @@ import requests
 from django.http import Http404
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import action, permission_classes
+from rest_framework.decorators import action
 from buggernaut.serializers import *
 from django_filters import rest_framework as filters
 from .permissions import *
@@ -93,10 +92,22 @@ class ProjectViewSet(viewsets.ModelViewSet):
         else:
             return Response({'Status': 'All issues are not resolved for this project'})
 
-    # @permission_classes([IsAdmin])
     def destroy(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.is_admin:
+            pass
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         try:
             instance = self.get_object()
+            editor = instance.editorID
+            images = Image.objects.filter(editorID=editor)
+
+            for i in images:
+                i.delete()
+                url_tbd = "/home/shreyasdoda/buggernaut/backend/buggernaut_backend" + i.url.url
+                os.remove(url_tbd)
+
             self.perform_destroy(instance)
         except Http404:
             pass
@@ -128,6 +139,14 @@ class IssueViewSet(viewsets.ModelViewSet):
             issue = self.get_object()
             project = issue.project
             link = "http://localhost:3000/projects/" + project.slug
+            editor = issue.editorID
+            images = Image.objects.filter(editorID=editor)
+
+            for i in images:
+                i.delete()
+                url_tbd = "/home/shreyasdoda/buggernaut/backend/buggernaut_backend" + i.url.url
+                os.remove(url_tbd)
+
             mailer = Mailer()
             mailer.bugStatusChanged(project_name=project.title, project_link=link, issue_subject=issue.subject, action="deleted", doer=request.user.full_name, team_members=project.members.all())
             self.perform_destroy(issue)
@@ -356,12 +375,13 @@ class UserViewSet(viewsets.ModelViewSet):
                 user.banned = False
             else:
                 user.banned = True
+                user.is_superuser = False
 
             user.save()
 
             mailer = Mailer()
 
-            if user.is_superuser:
+            if user.banned:
                 mailer.banOrAdmitUser(user_email=user.email, user_name=user.full_name, change="banned",
                                     changer=request.user.full_name)
             else:
@@ -380,6 +400,33 @@ class TagViewSet(viewsets.ModelViewSet):
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
+
+    @action(methods=['POST'], detail=False, url_path='deleteRem', url_name='deleteRem')
+    def delete_remaining_images(self, request):
+        if request.user.is_authenticated:
+            editor_id = request.POST.get('editorID')
+            urls = request.POST.get('urls')
+
+            images = Image.objects.filter(editorID=editor_id)
+
+            for i in images:
+                print(i)
+                print("editor_id: ",i.editorID)
+                print("url: ",i.url)
+                if i.url.url not in urls:
+                    print("deleting")
+                    url_tbd = "/home/shreyasdoda/buggernaut/backend/buggernaut_backend" + i.url.url
+                    print(url_tbd)
+                    if os.path.exists(url_tbd):
+                        i.delete()
+                        os.remove(url_tbd)
+                        print("deleted")
+                    else:
+                        print("wrong url")
+
+            return Response({"status": "successful"})
+        else:
+            return Response({"Detail": "Not authenticated"})
 
 
 class CommentViewSet(viewsets.ModelViewSet):
