@@ -1,4 +1,4 @@
-![Buggernaut Logo](/media/assets/app_logo_with_name_white.png)
+![Buggernaut Logo](buggernaut_backend/media/assets/app_logo_with_name_white.png)
 
 **Buggernaut bridges the gap between you and the users of your app, providing a way for them to report any bugs they find in it**
 
