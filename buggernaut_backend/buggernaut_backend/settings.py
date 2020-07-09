@@ -138,11 +138,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'buggernaut.User'
 
-EMAIL_HOST = base_configuration["services"]["mailing"]["email_host"],
-EMAIL_PORT = base_configuration["services"]["mailing"]["email_port"],
+EMAIL_HOST = base_configuration["services"]["mailing"]["email_host"]
+EMAIL_PORT = base_configuration["services"]["mailing"]["email_port"]
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = base_configuration["services"]["mailing"]["email_host_user"],
-EMAIL_HOST_PASSWORD = base_configuration["services"]["mailing"]["email_host_password"],
+EMAIL_HOST_USER = base_configuration["services"]["mailing"]["email_host_user"]
+EMAIL_HOST_PASSWORD = base_configuration["services"]["mailing"]["email_host_password"]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/

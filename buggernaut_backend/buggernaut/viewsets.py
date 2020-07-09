@@ -18,7 +18,7 @@ from buggernaut_backend.settings import base_configuration, BASE_DIR
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
-    # serializer_class = self.get_s
+    # serializer_class = self.get
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ['deployed', 'slug']
 
