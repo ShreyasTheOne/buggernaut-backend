@@ -15,6 +15,7 @@ This is the repository for the **backend** application of Buggernaut. Click [her
 - In the root directory of the project run: 
   - `python manage.py makemigrations` to create tables in the database
   - `python manage.py migrate` to apply the newest database representation to the app
+  - `redis-server`
   - `python manage.py runserver` to... run the server! It will automatically start an ASGI/Channels version 2.4.0 development server at http://127.0.0.1:8000/
 - Buggernaut allows you to associate tags with issues. You must populate the database with tags from http://127.0.0.1:8000/tags/ for them to show up at the frontend.
 - You are ready to use the app! Bon testing :)
