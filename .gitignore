@@ -16,7 +16,19 @@ db.sqlite3
 *.bak 
 
 # If you are using PyCharm # 
-*.iws /out/ 
+#.idea/**/workspace.xml 
+#.idea/**/tasks.xml 
+#.idea/dictionaries 
+#.idea/**/dataSources/ 
+#.idea/**/dataSources.ids 
+#.idea/**/dataSources.xml 
+#.idea/**/dataSources.local.xml 
+#.idea/**/sqlDataSources.xml 
+#.idea/**/dynamic.xml 
+#.idea/**/uiDesigner.xml 
+#.idea/**/gradle.xml 
+#.idea/**/libraries 
+#*.iws /out/ 
 
 # Python # 
 *.py[cod] 
