@@ -14,7 +14,7 @@ This is the repository for the **backend** application of Buggernaut. Click [her
   - Fill out correct values to the given fields. **NOTE: ALL VALUES ARE REQUIRED FOR THE APP TO WORK**
 - To set up the database:
   - In MySQL, first create your database.
-  - Run the command: `ALTER DATABASE databasename CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;` where **databasename** is the name of your database.
+  - Run the command: `ALTER DATABASE databasename CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;` where `databasename` is the name of your database.
 - In the root directory of the project run: 
   - `python manage.py makemigrations` to create tables in the database
   - `python manage.py migrate` to apply the newest database representation to the app
