@@ -8,6 +8,7 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     is_superuser = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
     enrolment_number = models.CharField(max_length=15)
     display_picture = models.CharField(max_length=500)
     full_name = models.CharField(max_length=50)
@@ -41,7 +42,7 @@ class Project(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name

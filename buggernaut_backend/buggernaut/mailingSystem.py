@@ -1,4 +1,4 @@
-from django.core.mail import send_mail, send_mass_mail
+from django.core.mail import send_mail
 
 class Mailer:
     def __init__(self):

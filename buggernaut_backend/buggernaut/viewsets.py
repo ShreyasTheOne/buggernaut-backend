@@ -1,6 +1,7 @@
 import os
 from rest_framework import viewsets
 from .mailingSystem import Mailer
+import threading
 from buggernaut.models import *
 import requests
 from django.http import Http404
@@ -27,7 +28,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         mailerInstance = Mailer()
         link = "http://localhost:3000/projects/"+project.slug
-        mailerInstance.newProjectUpdate(project_name=project.title, project_link=link, team_members=project.members.all())
+        x = threading.Thread(target=mailerInstance.newProjectUpdate, args=(project.title, link, project.members.all()))
+        x.start()
+        # mailerInstance.newProjectUpdate(project_name=project.title, project_link=link, team_members=project.members.all())
 
     def get_serializer_class(self):
         if self.action == "create" or self.action == "update" or self.action == "partial":
@@ -86,7 +89,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project.save()
 
             mailer = Mailer()
-            mailer.deployProject(project=project.title, deployed_by=request.user.full_name, team_members=project.members.all())
+            x = threading.Thread(target=mailer.deployProject, args=(project.title, request.user.full_name, project.members.all()))
+            x.start()
+            # mailer.deployProject(project=project.title, deployed_by=request.user.full_name, team_members=project.members.all())
 
             return Response({'Status': 'Project successfully deployed'}, status=status.HTTP_202_ACCEPTED)
         else:
@@ -125,8 +130,9 @@ class IssueViewSet(viewsets.ModelViewSet):
         project = issue.project
         link = "http://localhost:3000/projects/" + project.slug
         mailer = Mailer()
-        # def newBugReported(self, project_name, project_link, reported_by, title, team_members=[]):
-        mailer.newBugReported( project_name=project.title, project_link=link, reported_by=issue.reported_by.full_name, issue_subject=issue.subject, team_members=project.members.all())
+        x = threading.Thread(target=mailer.newBugReported, args=(project.title, link, issue.reported_by.full_name, issue.subject, project.members.all()))
+        x.start()
+        # mailer.newBugReported( project_name=project.title, project_link=link, reported_by=issue.reported_by.full_name, issue_subject=issue.subject, team_members=project.members.all())
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -148,7 +154,9 @@ class IssueViewSet(viewsets.ModelViewSet):
                 os.remove(url_tbd)
 
             mailer = Mailer()
-            mailer.bugStatusChanged(project_name=project.title, project_link=link, issue_subject=issue.subject, action="deleted", doer=request.user.full_name, team_members=project.members.all())
+            x = threading.Thread(target=mailer.bugStatusChanged, args=(project.title, link, issue.subject, "deleted", request.user.full_name, project.members.all()))
+            x.start()
+            # mailer.bugStatusChanged(project_name=project.title, project_link=link, issue_subject=issue.subject, action="deleted", doer=request.user.full_name, team_members=project.members.all())
             self.perform_destroy(issue)
 
         except Http404:
@@ -173,10 +181,12 @@ class IssueViewSet(viewsets.ModelViewSet):
         mailer = Mailer()
 
         if issue.resolved:
-            mailer.bugStatusChanged(project_name=project.title, project_link=link, issue_subject=issue.subject, action="resolved", doer=request.user.full_name, team_members=project.members.all())
+           x = threading.Thread(target=mailer.bugStatusChanged, args=(project.title, link, issue.subject, "resolved", request.user.full_name, project.members.all()))
+           # mailer.bugStatusChanged(project_name=project.title, project_link=link, issue_subject=issue.subject, action="resolved", doer=request.user.full_name, team_members=project.members.all())
         else:
-            mailer.bugStatusChanged(project_name=project.title, project_link=link, issue_subject=issue.subject, action="reopened", doer=request.user.full_name, team_members=project.members.all())
-
+           x = threading.Thread(target=mailer.bugStatusChanged, args=(project.title, link, issue.subject, "reopened", request.user.full_name, project.members.all()))
+           # mailer.bugStatusChanged(project_name=project.title, project_link=link, issue_subject=issue.subject, action="reopened", doer=request.user.full_name, team_members=project.members.all())
+        x.start()
         ser = IssueGetSerializer(issue)
         return Response(ser.data, status=status.HTTP_200_OK)
 
@@ -201,7 +211,9 @@ class IssueViewSet(viewsets.ModelViewSet):
 
             # def bugAssigned(self, project_name, assignment_link, issue_subject, assigned_to_name, assigned_to_email):
             mailer = Mailer()
-            mailer.bugAssigned(project_name=project.title, assignment_link=assignment_link, issue_subject=issue.subject, assigned_to_name=assigned.full_name, assigned_to_email=assigned.email)
+            x = threading.Thread(target=mailer.bugAssigned, args=(project.title, assignment_link, issue.subject, assigned.full_name, assigned.email))
+            x.start()
+            # mailer.bugAssigned(project_name=project.title, assignment_link=assignment_link, issue_subject=issue.subject, assigned_to_name=assigned.full_name, assigned_to_email=assigned.email)
 
             return Response({'Detail': 'Assignment Successful'}, status=status.HTTP_202_ACCEPTED)
         else:
@@ -219,7 +231,8 @@ class IssueViewSet(viewsets.ModelViewSet):
         # ser = UserSerializer(user)
         return Response(ser.data)
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
+# class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     # permission_classes = [IsAdmin, ]
@@ -282,7 +295,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
                     is_admin = True
 
                 newUser = User(enrolment_number=enrolNum, username=enrolNum, email=email, first_name=firstName, full_name=fullName,
-                               is_superuser=is_admin, display_picture=picture)
+                               is_superuser=is_admin, is_staff=is_admin, display_picture=picture)
                 newUser.save()
                 login(request=request, user=newUser)
                 # ser = UserSerializer(newUser)
@@ -351,18 +364,22 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
             user = User.objects.get(pk=pk)
             if user.is_superuser:
                 user.is_superuser = False
+                user.is_staff = False
             else:
-                user.is_superuser= True
+                user.is_superuser = True
+                user.is_staff = True
 
             user.save()
 
             mailer = Mailer()
 
             if user.is_superuser:
-                mailer.statusUpdate(user_email=user.email, user_name=user.full_name, change="promote", changer=request.user.full_name)
+                x = threading.Thread(target=mailer.statusUpdate, args=(user.email, user.full_name, "promote", request.user.full_name))
+                # mailer.statusUpdate(user_email=user.email, user_name=user.full_name, change="promote", changer=request.user.full_name)
             else:
-                mailer.statusUpdate(user_email=user.email, user_name=user.full_name, change="demote", changer=request.user.full_name)
-
+                x = threading.Thread(target=mailer.statusUpdate, args=(user.email, user.full_name, "demote", request.user.full_name))
+                # mailer.statusUpdate(user_email=user.email, user_name=user.full_name, change="demote", changer=request.user.full_name)
+            x.start()
             return Response({"status": "Role updated"}, status=status.HTTP_200_OK)
         else:
             return Response({"status": "You're not an admin"}, status=status.HTTP_403_FORBIDDEN)
@@ -371,23 +388,29 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     def toggleBan(self, request, pk):
         if request.user.is_superuser:
             user = User.objects.get(pk=pk)
+            if user == request.user:
+                return Response({"Detail": "You cannot change your own status!"})
+
             if user.banned:
                 user.banned = False
             else:
                 user.banned = True
                 user.is_superuser = False
+                user.is_staff = False
 
             user.save()
 
             mailer = Mailer()
 
             if user.banned:
-                mailer.banOrAdmitUser(user_email=user.email, user_name=user.full_name, change="banned",
-                                    changer=request.user.full_name)
+                x = threading.Thread(target=mailer.banOrAdmitUser, args=(user.email, user.full_name, "banned", request.user.full_name))
+                # mailer.banOrAdmitUser(user_email=user.email, user_name=user.full_name, change="banned",
+                #                     changer=request.user.full_name)
             else:
-                mailer.banOrAdmitUser(user_email=user.email, user_name=user.full_name, change="admit",
-                                    changer=request.user.full_name)
-
+                x = threading.Thread(target=mailer.banOrAdmitUser, args=(user.email, user.full_name, "admit", request.user.full_name))
+                # mailer.banOrAdmitUser(user_email=user.email, user_name=user.full_name, change="admit",
+                #                     changer=request.user.full_name)
+            x.start()
             return Response({"status": "Status updated"}, status=status.HTTP_200_OK)
         else:
             return Response({"status": "You're not an admin"}, status=status.HTTP_403_FORBIDDEN)
