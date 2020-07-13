@@ -2,6 +2,7 @@ from django.db import models
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from tinymce.models import HTMLField
 
 # Create your models here.
 
@@ -26,7 +27,7 @@ class Project(models.Model):
     slug = models.CharField(max_length=50)
     image = models.ImageField(upload_to='projectImages/', default='assets/img.png')
     editorID = models.CharField(max_length=1000)
-    wiki = models.TextField()
+    wiki = HTMLField()
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='projects')
     deployed = models.BooleanField(default=False)
     created_at = models.DateTimeField('time published', default=datetime.now)
@@ -59,7 +60,7 @@ class Issue(models.Model):
     reported_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="issue_reported_by_user", on_delete=models.CASCADE)
     editorID = models.CharField(max_length=1000)
     subject = models.CharField(max_length=100, default="Subject")
-    description = models.TextField(default="Description")
+    description = HTMLField()
     priority = models.PositiveSmallIntegerField(choices=[(1, 'High'), (2, 'Medium'), (3, 'Low')], default=2)
     resolved = models.BooleanField(default=False)
     created_at = models.DateTimeField('time published', default=datetime.now)

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'buggernaut',
     'django_filters',
+    'tinymce',
 ]
 
 MIDDLEWARE = [
@@ -65,6 +66,7 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = (
        'http://localhost:3000',
+       # 'http://localhost:4000',
        'http://localhost:8000',
        # 'http://internet.channeli.in',
 )
@@ -114,6 +116,7 @@ DATABASES = {
         'PASSWORD': base_configuration["services"]["database"]["password"],
         'HOST': base_configuration["services"]["database"]["host"],
         'POR': base_configuration["services"]["database"]["port"],
+        'OPTIONS': {'charset': 'utf8mb4'},
     }
 }
 
