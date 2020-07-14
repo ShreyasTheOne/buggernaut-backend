@@ -16,8 +16,9 @@ This is the repository for the **backend** application of Buggernaut. Click [her
   - In MySQL, first create your database.
   - Run the command: `ALTER DATABASE databasename CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;` where `databasename` is the name of your database.
 - In the root directory of the project run: 
-  - `python manage.py makemigrations` to create tables in the database
-  - `python manage.py migrate` to apply the newest database representation to the app
+  - `python3 manage.py makemigrations` to create tables in the database
+  - `python3 manage.py migrate` to apply the newest database representation to the app
+  - `python3 populate.py` to populate the database with tags provided by default. It will then allow you to enter any new tags you'd like to create in the form of space separated words
   - `redis-server`
   - `python manage.py runserver` to... run the server! It will automatically start an ASGI/Channels version 2.4.0 development server at http://127.0.0.1:8000/
 - Buggernaut allows you to associate tags with issues. You must populate the database with tags from http://127.0.0.1:8000/tags/ for them to show up at the frontend.
