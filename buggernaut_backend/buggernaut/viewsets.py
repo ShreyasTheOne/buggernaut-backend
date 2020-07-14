@@ -231,8 +231,8 @@ class IssueViewSet(viewsets.ModelViewSet):
         # ser = UserSerializer(user)
         return Response(ser.data)
 
-class UserViewSet(viewsets.ModelViewSet):
-# class UserViewSet(viewsets.ReadOnlyModelViewSet):
+# class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     # permission_classes = [IsAdmin, ]
