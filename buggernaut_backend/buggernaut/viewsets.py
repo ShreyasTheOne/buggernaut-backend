@@ -344,7 +344,7 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return Response({"enrolment_number": "Not authenticated"})
 
-    @action(methods=['get', 'options', ], detail=False, url_name="stats", url_path="stats", permission_classes=[IsAuthenticated])
+    @action(methods=['get', 'options', ], detail=False, url_name="stats", url_path="stats", permission_classes=[AllowAny])
     def get_stats(self, request):
         if request.user.is_authenticated:
             if request.user.banned:
@@ -362,6 +362,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def toggleStatus(self, request, pk):
         if request.user.is_superuser:
             user = User.objects.get(pk=pk)
+            if user == request.user:
+                return Response({"status": "You cannot change your own status!"})
+
             if user.is_superuser:
                 user.is_superuser = False
                 user.is_staff = False
@@ -389,7 +392,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.user.is_superuser:
             user = User.objects.get(pk=pk)
             if user == request.user:
-                return Response({"Detail": "You cannot change your own status!"})
+                return Response({"status": "You cannot change your own status!"})
 
             if user.banned:
                 user.banned = False
