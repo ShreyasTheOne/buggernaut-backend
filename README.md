@@ -2,7 +2,7 @@
 
 **Buggernaut bridges the gap between you and the users of your app, providing a way for them to report any bugs they find in it**
 
-This is the repository for the **backend** application of Buggernaut. Click [here](https://github.com/shreyasdoda/buggernaut-frontend) to go to the backend repository.
+This is the repository for the **backend** application of Buggernaut. Click [here](https://github.com/shreyasdoda/buggernaut-frontend) to go to the frontend repository.
 
 # Setup instructions (for local server only):
 - Clone this repository to a folder on your device.
