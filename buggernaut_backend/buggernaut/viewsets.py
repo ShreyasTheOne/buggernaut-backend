@@ -255,6 +255,8 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         }
         user_data = requests.post(url=url, data=data).json()
 
+        if(user_data == None):
+            return Response({"status": "invalid token"})
         ac_tok = user_data['access_token']
         # GET ACCESS TOKEN
         headers = {
@@ -299,17 +301,17 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
                 newUser.save()
                 login(request=request, user=newUser)
                 # ser = UserSerializer(newUser)
-                return Response({"status": "user created", "access_token": ac_tok}, status=status.HTTP_202_ACCEPTED)
+                return Response({"status": "user created"}, status=status.HTTP_202_ACCEPTED)
             else:
                 # SORRY YOU CAN'T USE THIS
                 return Response({"status": "user not in IMG"})
 
         if user.banned:
-            return Response({"status": "user banned", "access_token": ac_tok})
+            return Response({"status": "user banned"})
 
         login(request=request, user=user)
         # request.session["user"] = "dingo"
-        return Response({"status": "user exists", "access_token": ac_tok})
+        return Response({"status": "user exists"})
 
     @action(methods=['post', 'options', ], detail=False, url_name="login", url_path="login",
             permission_classes=[AllowAny])
