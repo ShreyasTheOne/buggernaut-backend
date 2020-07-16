@@ -79,7 +79,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def deploy_project(self, request, pk):
         project = Project.objects.get(pk=pk)
 
-        if request.user.is_superuser or request.user in project.members:
+        if request.user.is_superuser or request.user in project.members.all():
             pass
         else:
             return Response({"Status":"Not authorized."} , status=status.HTTP_403_FORBIDDEN)
@@ -98,7 +98,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response({'Status': 'All issues are not resolved for this project'})
 
     def destroy(self, request, *args, **kwargs):
-        if request.user.is_authenticated and request.user.is_admin:
+        if request.user.is_authenticated and request.user.is_superuser:
             pass
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -144,6 +144,13 @@ class IssueViewSet(viewsets.ModelViewSet):
         try:
             issue = self.get_object()
             project = issue.project
+            user = self.request.user
+
+            if user.is_superuser or user == issue.reported_by or user in project.members.all():
+                pass
+            else:
+                return Response({"Status": "Not authorized"})
+
             link = "http://localhost:3000/projects/" + project.slug
             editor = issue.editorID
             images = Image.objects.filter(editorID=editor)
@@ -164,10 +171,16 @@ class IssueViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=['get', ], detail=True, url_path='resolve-or-reopen', url_name='resolve-or-reopen', permission_classes=[IsTeamMemberOrAdmin])
+    @action(methods=['get', ], detail=True, url_path='resolve-or-reopen', url_name='resolve-or-reopen', permission_classes=[IsAuthenticated])
     def resolve_or_reopen(self, request, pk):
-        user = self.request.user;
+        user = self.request.user
         issue = Issue.objects.get(pk=pk)
+
+        if user.is_superuser or user == issue.reported_by or user in issue.project.members.all():
+            pass
+        else:
+            return Response({"Status": "Not authorized"})
+
         if issue.resolved:
             issue.resolved = False
         else:
@@ -231,8 +244,8 @@ class IssueViewSet(viewsets.ModelViewSet):
         # ser = UserSerializer(user)
         return Response(ser.data)
 
-# class UserViewSet(viewsets.ModelViewSet):
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
+# class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     # permission_classes = [IsAdmin, ]
