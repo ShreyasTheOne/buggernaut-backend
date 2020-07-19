@@ -9,7 +9,6 @@ This is the repository for the **backend** application of Buggernaut. Click [her
 - Run `pip install -r requirements.txt` (using Python version 3.6.9 in virtual environment).
 - From root directory of project execute the following commands:
   - `cd configuration/`
-  - `touch base.yml`
   - `cp base_stencil.yml base.yml`
   - Fill out correct values to the given fields. **NOTE: ALL VALUES ARE REQUIRED FOR THE APP TO WORK**
 - To set up the database:
