@@ -8,14 +8,15 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
+from buggernaut.models import User, Issue
 from buggernaut.serializers import *
 from buggernaut.mailingSystem import Mailer
 
 from buggernaut_backend.settings import base_configuration
 
 
-# class UserViewSet(viewsets.ReadOnlyModelViewSet):
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+# class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -144,7 +145,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get', 'options', ], detail=True, url_name="toggleStatus", url_path="toggleStatus",
             permission_classes=[IsAuthenticated])
-    def toggleStatus(self, request, pk):
+    def toggle_status(self, request, pk):
         if request.user.is_superuser:
             user = User.objects.get(pk=pk)
             if user == request.user:
@@ -180,7 +181,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get', 'options', ], detail=True, url_name="toggleBan", url_path="toggleBan",
             permission_classes=[IsAuthenticated])
-    def toggleBan(self, request, pk):
+    def toggle_ban(self, request, pk):
         if request.user.is_superuser:
             user = User.objects.get(pk=pk)
             if user == request.user:
