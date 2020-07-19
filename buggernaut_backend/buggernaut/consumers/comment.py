@@ -1,10 +1,8 @@
 import json
 from asgiref.sync import async_to_sync
-from channels.db import database_sync_to_async
 from channels.generic.websocket import WebsocketConsumer
-from channels.auth import get_user
-from .models import Issue, Comment, Project
-from .serializers import CommentGetSerializer
+from buggernaut.models import Issue, Comment, Project
+from buggernaut.serializers import CommentGetSerializer
 
 
 class CommentConsumer(WebsocketConsumer):
@@ -29,7 +27,6 @@ class CommentConsumer(WebsocketConsumer):
         except Issue.DoesNotExist:
             self.close()
 
-
     def disconnect(self, close_code):
         # Leave room group
         async_to_sync(self.channel_layer.group_discard)(
@@ -44,15 +41,11 @@ class CommentConsumer(WebsocketConsumer):
         comment_id = comment_data_json['comment_id']
 
         try:
-            # print("comment_id")
-            # print(comment_id)
             comment = Comment.objects.get(pk=comment_id)
             issue = comment.issue
             try:
                 project = Project.objects.get(pk=issue.project.id)
-                # print("project.id:" , type(project.id), sep=" ")
-                # print("self.project_id:" , type(self.project_id), sep=" ")
-                if(project.id == int(self.project_id)):
+                if (project.id == int(self.project_id)):
                     print("issue.id")
                     print(issue.id)
                     serializer = CommentGetSerializer(comment)
@@ -69,16 +62,6 @@ class CommentConsumer(WebsocketConsumer):
 
         except Comment.DoesNotExist:
             pass
-
-        # try:
-        #     issue = Issue.objects.get(pk=issue_id)
-        #     if issue.project == self.project_id:
-        #
-        #     else:
-        #         pass
-        # except Issue.DoesNotExist:
-        #     pass
-
 
     # Receive message from room group
     def send_comment(self, event):

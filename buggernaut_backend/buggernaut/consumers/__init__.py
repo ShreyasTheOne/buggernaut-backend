@@ -1,0 +1,1 @@
+from buggernaut.consumers.comment import CommentConsumer

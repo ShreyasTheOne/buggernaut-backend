@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 import yaml
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -31,7 +32,6 @@ SECRET_KEY = base_configuration["secrets"]["secretKey"]
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -61,16 +61,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = (
-       'http://localhost:3000',
-       # 'http://127.0.0.1:3000',
-       # 'http://192.168.0.106:3000',
-       # 'http://localhost:4000',
-       'http://localhost:8000',
-       # 'http://internet.channeli.in',
+    'http://localhost:3000',
+    # 'http://127.0.0.1:3000',
+    # 'http://192.168.0.106:3000',
+    # 'http://localhost:4000',
+    'http://localhost:8000',
+    # 'http://internet.channeli.in',
 )
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
@@ -97,14 +96,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'buggernaut_backend.wsgi.application'
 
-
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
-      'rest_framework.authentication.SessionAuthentication'
+        'rest_framework.authentication.SessionAuthentication'
     ],
 }
 # Database
@@ -121,7 +119,6 @@ DATABASES = {
         'OPTIONS': {'charset': 'utf8mb4'},
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -162,9 +159,9 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
+
 
 STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
